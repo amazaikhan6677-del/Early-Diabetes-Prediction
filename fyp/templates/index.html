@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiabetesGuard — Early Diabetes Risk Prediction</title>
+  <meta name="description" content="AI-powered early diabetes risk prediction tool. Enter your health details for a personalized risk assessment.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- ═══ TOPBAR ═══════════════════════════════════════════════ -->
+<nav class="topbar">
+  <a class="topbar-brand" href="#">
+    <div class="topbar-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <span class="topbar-name">Diabetes<span>Guard</span></span>
+  </a>
+
+  <div class="topbar-meta">
+    <span class="date-badge">{{ date }}</span>
+    <span class="date-badge" id="live-time">--:--:-- --</span>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-tag">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+    Machine Learning Powered
+  </div>
+  <h1>Early <span>Diabetes Risk</span> Prediction</h1>
+  <p class="hero-sub">
+    Enter your personal, medical, and lifestyle details below.
+    Our AI model analyzes your data and provides an early risk assessment in seconds.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">537M+</div>
+      <div class="hero-stat-lbl">People with diabetes worldwide</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">~50%</div>
+      <div class="hero-stat-lbl">Go undiagnosed for years</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">80%</div>
+      <div class="hero-stat-lbl">Type 2 cases are preventable</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MAIN ══════════════════════════════════════════════════ -->
+<main class="main-wrap">
+
+  <!-- Steps Indicator -->
+  <div class="steps-nav">
+    <div class="step-item active" id="step-1">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <span class="step-label-text">Personal Info</span>
+      </div>
+    </div>
+    <div class="step-item" id="step-2">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <span class="step-label-text">Medical History</span>
+      </div>
+    </div>
+    <div class="step-item" id="step-3">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <span class="step-label-text">Clinical Data</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── FORM SECTION ─────────────────────────────────────── -->
+  <div id="form-section">
+
+    <!-- PAGE 1 — Personal + Lifestyle -->
+    <div id="page1">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">Personal Information</div>
+            <div class="card-subtitle">Basic demographics and body measurements</div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="field-label">Age <span class="req">*</span></label>
+            <input type="number" id="age" placeholder="e.g. 45" min="1" max="120">
+            <span class="field-hint">Your current age in years</span>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Gender <span class="req">*</span></label>
+            <div class="radio-group" id="gender-group">
+              <div class="radio-pill" data-val="male"   onclick="selectRadio('gender-group',this,'gender')">Male</div>
+              <div class="radio-pill" data-val="female" onclick="selectRadio('gender-group',this,'gender')">Female</div>
+              <div class="radio-pill" data-val="other"  onclick="selectRadio('gender-group',this,'gender')">Other</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Weight (kg) <span class="req">*</span></label>
+            <input type="number" id="weight" placeholder="e.g. 75" min="20" max="300">
+            <span class="field-hint">In kilograms</span>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Height (cm) <span class="req">*</span></label>
+            <input type="number" id="height" placeholder="e.g. 170" min="100" max="250">
+            <span class="field-hint">In centimeters</span>
+          </div>
+
+          <div class="form-group full">
+            <div class="bmi-display" id="bmi-display" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">Lifestyle Habits</div>
+            <div class="card-subtitle">Daily activity and health habits</div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="field-label">Physical Activity Level</label>
+            <div class="radio-group" id="activity-group">
+              <div class="radio-pill" data-val="sedentary" onclick="selectRadio('activity-group',this,'activity')">Sedentary</div>
+              <div class="radio-pill" data-val="light"     onclick="selectRadio('activity-group',this,'activity')">Light</div>
+              <div class="radio-pill" data-val="moderate"  onclick="selectRadio('activity-group',this,'activity')">Moderate</div>
+              <div class="radio-pill" data-val="active"    onclick="selectRadio('activity-group',this,'activity')">Active</div>
+            </div>
+            <span class="field-hint">Sedentary = desk job, little/no exercise</span>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Smoking Status</label>
+            <div class="radio-group" id="smoking-group">
+              <div class="radio-pill" data-val="never"   onclick="selectRadio('smoking-group',this,'smoking')">Never</div>
+              <div class="radio-pill" data-val="former"  onclick="selectRadio('smoking-group',this,'smoking')">Former Smoker</div>
+              <div class="radio-pill" data-val="current" onclick="selectRadio('smoking-group',this,'smoking')">Current Smoker</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-nav">
+        <div></div>
+        <button class="btn btn-primary" onclick="goPage(2)">
+          Next: Medical History
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div><!-- /page1 -->
+
+    <!-- PAGE 2 — Medical History -->
+    <div id="page2" style="display:none">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">Medical History</div>
+            <div class="card-subtitle">Existing conditions and family background</div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="field-label">Family History of Diabetes</label>
+            <div class="radio-group" id="family-group">
+              <div class="radio-pill" data-val="yes"     onclick="selectRadio('family-group',this,'familyHistory')">Yes</div>
+              <div class="radio-pill" data-val="no"      onclick="selectRadio('family-group',this,'familyHistory')">No</div>
+              <div class="radio-pill" data-val="unknown" onclick="selectRadio('family-group',this,'familyHistory')">Not Sure</div>
+            </div>
+            <span class="field-hint">Parents, siblings, or grandparents with diabetes</span>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Previous High Blood Sugar</label>
+            <div class="radio-group" id="highbs-group">
+              <div class="radio-pill" data-val="yes"     onclick="selectRadio('highbs-group',this,'highBloodSugar')">Yes</div>
+              <div class="radio-pill" data-val="no"      onclick="selectRadio('highbs-group',this,'highBloodSugar')">No</div>
+              <div class="radio-pill" data-val="unknown" onclick="selectRadio('highbs-group',this,'highBloodSugar')">Not Sure</div>
+            </div>
+            <span class="field-hint">Ever told by a doctor your sugar was high?</span>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Hypertension (High Blood Pressure)</label>
+            <div class="radio-group" id="hyper-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('hyper-group',this,'hypertension')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('hyper-group',this,'hypertension')">No</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Heart Disease History</label>
+            <div class="radio-group" id="heart-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('heart-group',this,'heartDisease')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('heart-group',this,'heartDisease')">No</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Polycystic Ovary Syndrome (PCOS)</label>
+            <div class="radio-group" id="pcos-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('pcos-group',this,'pcos')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('pcos-group',this,'pcos')">No</div>
+              <div class="radio-pill" data-val="na"  onclick="selectRadio('pcos-group',this,'pcos')">Not Applicable</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-nav">
+        <button class="btn btn-ghost" onclick="goPage(1)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+        <button class="btn btn-primary" onclick="goPage(3)">
+          Next: Clinical Data
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div><!-- /page2 -->
+
+    <!-- PAGE 3 — Clinical Measurements + Symptoms -->
+    <div id="page3" style="display:none">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">Clinical Measurements</div>
+            <div class="card-subtitle">Use sliders to enter your most recent lab values</div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+
+          <!-- Glucose -->
+          <div class="form-group range-wrap">
+            <label class="field-label">
+              Glucose Level (mg/dL)
+              <span class="range-badge normal" id="glucose-badge">Normal</span>
+            </label>
+            <div class="range-row">
+              <input type="range" id="glucose" min="70" max="300" value="100" step="1"
+                     oninput="updateSliderFill(this)">
+              <span class="range-value" id="glucose-val">100</span>
+            </div>
+            <span class="field-hint">Fasting plasma glucose. Normal fasting: 70–99 mg/dL</span>
+          </div>
+
+          <!-- Blood Pressure -->
+          <div class="form-group range-wrap">
+            <label class="field-label">
+              Blood Pressure (mmHg)
+              <span class="range-badge normal" id="blood_pressure-badge">Normal</span>
+            </label>
+            <div class="range-row">
+              <input type="range" id="blood_pressure" min="40" max="180" value="80" step="1"
+                     oninput="updateSliderFill(this)">
+              <span class="range-value" id="blood_pressure-val">80</span>
+            </div>
+            <span class="field-hint">Diastolic blood pressure. Normal: below 80 mmHg</span>
+          </div>
+
+          <!-- Insulin -->
+          <div class="form-group range-wrap">
+            <label class="field-label">
+              Insulin Level (μU/mL)
+              <span class="range-badge normal" id="insulin-badge">Normal</span>
+            </label>
+            <div class="range-row">
+              <input type="range" id="insulin" min="0" max="300" value="80" step="1"
+                     oninput="updateSliderFill(this)">
+              <span class="range-value" id="insulin-val">80</span>
+            </div>
+            <span class="field-hint">2-hour serum insulin. Normal fasting: 2–25 μU/mL</span>
+          </div>
+
+          <!-- Skin Thickness -->
+          <div class="form-group range-wrap">
+            <label class="field-label">Triceps Skin Thickness (mm)</label>
+            <div class="range-row">
+              <input type="range" id="skin_thickness" min="0" max="100" value="20" step="1"
+                     oninput="updateSliderFill(this)">
+              <span class="range-value" id="skin_thickness-val">20</span>
+            </div>
+            <span class="field-hint">Triceps skinfold fold thickness in millimeters</span>
+          </div>
+
+          <!-- Diabetes Pedigree Function -->
+          <div class="form-group range-wrap">
+            <label class="field-label">Diabetes Pedigree Function</label>
+            <div class="range-row">
+              <input type="range" id="dpf" min="0" max="250" value="50" step="1"
+                     oninput="updateSliderFill(this)">
+              <span class="range-value" id="dpf-val">0.50</span>
+            </div>
+            <span class="field-hint">Genetic influence score (0.00–2.50). Higher = stronger family risk</span>
+          </div>
+
+          <!-- Pregnancies -->
+          <div class="form-group range-wrap">
+            <label class="field-label">Number of Pregnancies</label>
+            <div class="range-row">
+              <input type="range" id="pregnancies" min="0" max="17" value="0" step="1"
+                     oninput="updateSliderFill(this)">
+              <span class="range-value" id="pregnancies-val">0</span>
+            </div>
+            <span class="field-hint">Set to 0 if not applicable (e.g. male)</span>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4.5 12.5l4 4 11-11"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">Current Symptoms</div>
+            <div class="card-subtitle">Are you currently experiencing any of these?</div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="field-label">Frequent Urination (Polyuria)</label>
+            <div class="radio-group" id="polyuria-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('polyuria-group',this,'polyuria')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('polyuria-group',this,'polyuria')">No</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Increased Thirst (Polydipsia)</label>
+            <div class="radio-group" id="thirst-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('thirst-group',this,'polydipsia')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('thirst-group',this,'polydipsia')">No</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Unexplained Weight Loss</label>
+            <div class="radio-group" id="weightloss-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('weightloss-group',this,'weightLoss')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('weightloss-group',this,'weightLoss')">No</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Blurred Vision</label>
+            <div class="radio-group" id="vision-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('vision-group',this,'blurredVision')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('vision-group',this,'blurredVision')">No</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Extreme Fatigue / Tiredness</label>
+            <div class="radio-group" id="fatigue-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('fatigue-group',this,'fatigue')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('fatigue-group',this,'fatigue')">No</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Slow-Healing Wounds or Cuts</label>
+            <div class="radio-group" id="healing-group">
+              <div class="radio-pill" data-val="yes" onclick="selectRadio('healing-group',this,'slowHealing')">Yes</div>
+              <div class="radio-pill" data-val="no"  onclick="selectRadio('healing-group',this,'slowHealing')">No</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-predict" onclick="predict()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+          </svg>
+          Analyze & Predict Diabetes Risk
+        </button>
+      </div>
+
+      <div class="form-nav" style="border-top:none;padding-top:0;margin-top:0">
+        <button class="btn btn-ghost" onclick="goPage(2)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+      </div>
+    </div><!-- /page3 -->
+
+  </div><!-- /form-section -->
+
+  <!-- ─── LOADING SECTION ──────────────────────────────────── -->
+  <div id="loading-section" style="display:none">
+    <div class="loading-screen">
+      <div class="pulse-ring">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="loading-text">Analyzing Your Health Data</div>
+      <div class="loading-sub">Running risk assessment through our prediction model...</div>
+      <div class="progress-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── RESULT SECTION ───────────────────────────────────── -->
+  <div id="result-section" style="display:none"></div>
+
+</main>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════════ -->
+<footer>
+  <strong>DiabetesGuard</strong> — Early Diabetes Risk Prediction System<br>
+  Final Year Project &nbsp;·&nbsp; Machine Learning &amp; Web Development<br>
+  <span class="accent">For educational purposes only. Not a substitute for medical advice.</span>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

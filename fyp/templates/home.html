@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiabetesGuard — AI-Powered Early Diabetes Detection</title>
+  <meta name="description" content="Early diabetes risk prediction powered by machine learning. Know your risk before it's too late.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ══ RESET ══════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    /* ══ VARIABLES ══════════════════════════════════════════ */
+    :root {
+      --navy:      #07111C;
+      --navy2:     #0D1E2E;
+      --navy3:     #142436;
+      --teal:      #00C896;
+      --teal2:     #00A87E;
+      --teal-dim:  rgba(0,200,150,0.12);
+      --teal-glow: rgba(0,200,150,0.22);
+      --white:     #FFFFFF;
+      --off:       #F4F8F6;
+      --text:      #E8EFF4;
+      --muted:     #7A9BB0;
+      --border:    rgba(255,255,255,0.07);
+      --border2:   rgba(0,200,150,0.25);
+      --red-soft:  #FF6B6B;
+      --amber:     #FFB347;
+      --blue-soft: #5BA4CF;
+      --font-h:    'Syne', sans-serif;
+      --font-b:    'Instrument Sans', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-b);
+      background: var(--navy);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ══ NOISE TEXTURE OVERLAY ══════════════════════════════ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* ══ NAV ════════════════════════════════════════════════ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(7,17,28,0.85);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--teal2), var(--teal));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .brand-icon svg { width: 20px; height: 20px; color: var(--navy); }
+
+    .brand-name {
+      font-family: var(--font-h);
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-name em { color: var(--teal); font-style: normal; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-clock {
+      font-size: 12.5px;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.05em;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 6px;
+    }
+
+    .nav-date {
+      font-size: 12.5px;
+      color: var(--teal);
+      background: var(--teal-dim);
+      border: 1px solid var(--border2);
+      padding: 5px 12px;
+      border-radius: 6px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 38px;
+      padding: 0 18px;
+      background: var(--teal);
+      color: var(--navy);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      font-family: var(--font-b);
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background: var(--white);
+      transform: translateY(-1px);
+    }
+
+    /* ══ HERO ════════════════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding: 100px 2rem 80px;
+      overflow: hidden;
+    }
+
+    /* animated grid lines bg */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,200,150,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,150,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridDrift 30s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridDrift {
+      from { transform: translateY(0); }
+      to   { transform: translateY(60px); }
+    }
+
+    /* glowing orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(80px);
+    }
+
+    .orb-1 {
+      width: 500px; height: 500px;
+      top: -100px; right: -100px;
+      background: radial-gradient(circle, rgba(0,200,150,0.14) 0%, transparent 70%);
+      animation: orbFloat 8s ease-in-out infinite;
+    }
+
+    .orb-2 {
+      width: 350px; height: 350px;
+      bottom: 0; left: -80px;
+      background: radial-gradient(circle, rgba(91,164,207,0.10) 0%, transparent 70%);
+      animation: orbFloat 11s ease-in-out infinite reverse;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%       { transform: translateY(-30px) scale(1.05); }
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--teal-dim);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12.5px;
+      color: var(--teal);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .tag-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: tagPulse 2s infinite;
+    }
+
+    @keyframes tagPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-family: var(--font-h);
+      font-size: clamp(38px, 4.5vw, 62px);
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      margin-bottom: 1.25rem;
+      animation: fadeUp 0.8s ease 0.1s both;
+    }
+
+    .hero h1 .accent { color: var(--teal); }
+
+    .hero h1 .underline-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero h1 .underline-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal), transparent);
+      border-radius: 2px;
+    }
+
+    .hero-desc {
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 480px;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s ease 0.2s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s ease 0.3s both;
+    }
+
+    .btn-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 52px;
+      padding: 0 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: var(--font-b);
+      text-decoration: none;
+      transition: all 0.22s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary-hero {
+      background: var(--teal);
+      color: var(--navy);
+      box-shadow: 0 4px 20px rgba(0,200,150,0.30);
+    }
+
+    .btn-primary-hero:hover {
+      background: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,200,150,0.40);
+    }
+
+    .btn-outline-hero {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline-hero:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+      background: var(--teal-dim);
+    }
+
+    .hero-trust {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 2rem;
+      font-size: 13px;
+      color: var(--muted);
+      animation: fadeUp 0.8s ease 0.4s both;
+    }
+
+    .trust-avatars {
+      display: flex;
+    }
+
+    .trust-av {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 2px solid var(--navy);
+      margin-left: -8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .trust-av:first-child { margin-left: 0; }
+
+    /* ── Hero Visual Panel ── */
+    .hero-visual {
+      position: relative;
+      animation: fadeUp 0.9s ease 0.2s both;
+    }
+
+    .monitor-card {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .monitor-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal), transparent);
+    }
+
+    .monitor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .monitor-title {
+      font-family: var(--font-h);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--teal);
+      background: var(--teal-dim);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-weight: 500;
+    }
+
+    .live-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: tagPulse 1.5s infinite;
+    }
+
+    /* ECG Line */
+    .ecg-wrap {
+      background: rgba(0,0,0,0.25);
+      border-radius: 10px;
+      padding: 1rem 1rem 0.5rem;
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ecg-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 6px;
+    }
+
+    .ecg-svg { width: 100%; display: block; }
+
+    /* Metrics row */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .metric-box {
+      background: rgba(0,0,0,0.20);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .metric-val {
+      font-family: var(--font-h);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .metric-lbl { font-size: 10.5px; color: var(--muted); letter-spacing: 0.04em; }
+
+    .metric-box.ok  .metric-val { color: var(--teal); }
+    .metric-box.warn .metric-val { color: var(--amber); }
+    .metric-box.bad .metric-val { color: var(--red-soft); }
+
+    /* Risk gauge */
+    .gauge-wrap {
+      background: rgba(0,0,0,0.20);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .gauge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .gauge-score {
+      font-family: var(--font-h);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--amber);
+    }
+
+    .gauge-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .gauge-fill {
+      height: 100%;
+      width: 62%;
+      background: linear-gradient(90deg, var(--teal), var(--amber));
+      border-radius: 4px;
+      animation: gaugeFill 2s ease 1s both;
+    }
+
+    @keyframes gaugeFill {
+      from { width: 0%; }
+      to   { width: 62%; }
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* floating badges */
+    .float-badge {
+      position: absolute;
+      background: var(--navy3);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--teal);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      animation: badgeFloat 4s ease-in-out infinite;
+    }
+
+    .float-badge.b1 {
+      top: -18px; right: 24px;
+      animation-delay: 0s;
+    }
+
+    .float-badge.b2 {
+      bottom: 30px; left: -28px;
+      color: var(--white);
+      border-color: var(--border);
+      animation-delay: 2s;
+    }
+
+    @keyframes badgeFloat {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ══ STATS BAR ══════════════════════════════════════════ */
+    .stats-bar {
+      background: var(--navy2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stats-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 2rem;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-item:last-child { border-right: none; }
+
+    .stat-num {
+      font-family: var(--font-h);
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--teal);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-desc { font-size: 15px; color: var(--muted); line-height: 1.45; }
+
+    /* ══ ABOUT DIABETES ═════════════════════════════════════ */
+    .section {
+      padding: 6rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--teal);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      margin-bottom: 1rem;
+    }
+
+    .section-tag::before {
+      content: '';
+      display: block;
+      width: 20px; height: 2px;
+      background: var(--teal);
+      border-radius: 1px;
+    }
+
+    .section-h {
+      font-family: var(--font-h);
+      font-size: clamp(26px, 3.5vw, 42px);
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.80;
+    }
+
+    /* ── Types Cards ── */
+    .types-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1.25rem;
+      margin-top: 3rem;
+    }
+
+    .type-card {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s;
+    }
+
+    .type-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .type-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 0 0 16px 16px;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .type-card:hover::after { opacity: 1; }
+
+    .type-card.t1::after { background: linear-gradient(90deg, var(--blue-soft), transparent); }
+    .type-card.t2::after { background: linear-gradient(90deg, var(--teal), transparent); }
+    .type-card.tg::after { background: linear-gradient(90deg, var(--amber), transparent); }
+
+    .type-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .type-icon svg { width: 24px; height: 24px; }
+    .type-icon.blue { background: rgba(91,164,207,0.15); color: var(--blue-soft); }
+    .type-icon.teal { background: var(--teal-dim); color: var(--teal); }
+    .type-icon.amber { background: rgba(255,179,71,0.12); color: var(--amber); }
+
+    .type-name {
+      font-family: var(--font-h);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .type-sub { font-size: 12px; color: var(--teal); font-weight: 500; margin-bottom: 12px; }
+
+    .type-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    .type-facts {
+      margin-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .type-fact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .fact-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+      flex-shrink: 0;
+    }
+
+    /* ══ SYMPTOMS ════════════════════════════════════════════ */
+    .symptoms-section {
+      background: var(--navy2);
+      padding: 6rem 2rem;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .symptoms-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(0,200,150,0.05) 0%, transparent 65%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .symptoms-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 1rem;
+      margin-top: 3rem;
+    }
+
+    .symptom-card {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      transition: all 0.22s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .symptom-card:hover {
+      border-color: var(--border2);
+      background: rgba(0,200,150,0.05);
+      transform: translateY(-3px);
+    }
+
+    .sym-icon {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--teal-dim);
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+    }
+
+    .sym-icon svg { width: 24px; height: 24px; color: var(--teal); }
+
+    .sym-name {
+      font-family: var(--font-h);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .sym-desc { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+    /* ══ HOW IT WORKS ════════════════════════════════════════ */
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 0;
+      margin-top: 3.5rem;
+      position: relative;
+    }
+
+    .how-grid::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border2), transparent);
+      z-index: 0;
+    }
+
+    .how-step {
+      text-align: center;
+      padding: 0 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-circle {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--navy2);
+      border: 2px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-family: var(--font-h);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--teal);
+      transition: all 0.25s;
+    }
+
+    .how-step:hover .step-circle {
+      background: var(--teal);
+      color: var(--navy);
+      box-shadow: 0 0 20px rgba(0,200,150,0.4);
+    }
+
+    .step-name {
+      font-family: var(--font-h);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .step-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    /* ══ RISK FACTORS ════════════════════════════════════════ */
+    .risk-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+      margin-top: 3rem;
+    }
+
+    .risk-text .section-sub { max-width: 100%; }
+
+    .risk-list {
+      margin-top: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .risk-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+
+    .risk-item:hover {
+      border-color: var(--border2);
+      background: var(--teal-dim);
+    }
+
+    .risk-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--teal-dim);
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .risk-icon svg { width: 16px; height: 16px; color: var(--teal); }
+
+    /* Complications visual */
+    .complications-panel {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .complications-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(255,107,107,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .comp-title {
+      font-family: var(--font-h);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comp-title svg { width: 16px; height: 16px; color: var(--red-soft); }
+
+    .comp-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .comp-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .comp-name { color: var(--muted); }
+
+    .comp-bar-wrap {
+      width: 120px;
+      height: 5px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .comp-bar {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--red-soft), rgba(255,107,107,0.4));
+      animation: compFill 1.5s ease 0.5s both;
+    }
+
+    @keyframes compFill {
+      from { width: 0 !important; }
+    }
+
+    /* ══ ML MODEL SECTION ════════════════════════════════════ */
+    .ml-section {
+      background: var(--navy2);
+      padding: 6rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .ml-cards {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1.25rem;
+      margin-top: 3rem;
+    }
+
+    .ml-card {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem;
+      transition: all 0.22s;
+    }
+
+    .ml-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-3px);
+    }
+
+    .ml-card-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--teal-dim);
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .ml-card-icon svg { width: 22px; height: 22px; color: var(--teal); }
+
+    .ml-card-title {
+      font-family: var(--font-h);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .ml-card-desc { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+
+    .ml-stat {
+      display: inline-block;
+      margin-top: 1rem;
+      font-family: var(--font-h);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--teal);
+    }
+
+    .ml-stat-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ══ CTA ═════════════════════════════════════════════════ */
+    .cta-section {
+      padding: 7rem 2rem;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 50% 50%, rgba(0,200,150,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .cta-box {
+      background: var(--navy2);
+      border: 1px solid var(--border2);
+      border-radius: 24px;
+      padding: 3.5rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    }
+
+    .cta-h {
+      font-family: var(--font-h);
+      font-size: clamp(26px, 3vw, 38px);
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+
+    .cta-h em { color: var(--teal); font-style: normal; }
+
+    .cta-sub {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ══ REVIEWS ════════════════════════════════════════════ */
+    .reviews-section {
+      padding: 6rem 2rem;
+      position: relative; z-index: 1; overflow: hidden;
+    }
+    .reviews-section::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border2), transparent);
+    }
+    .reviews-header {
+      max-width: 1100px; margin: 0 auto 3rem;
+      display: flex; justify-content: space-between; align-items: flex-end;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+    .overall-rating {
+      display: flex; align-items: center; gap: 1.5rem;
+      background: var(--navy2); border: 1px solid var(--border2);
+      border-radius: 16px; padding: 1.25rem 2rem;
+    }
+    .rating-num {
+      font-family: var(--font-h); font-size: 52px; font-weight: 800;
+      color: var(--teal); line-height: 1;
+    }
+    .rating-details { display: flex; flex-direction: column; gap: 4px; }
+    .stars-row { display: flex; gap: 3px; }
+    .star { width: 18px; height: 18px; color: #FFB347; }
+    .rating-count { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .reviews-grid {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;
+    }
+    @media (max-width: 768px) {
+      .reviews-grid { grid-template-columns: 1fr; }
+      .reviews-header { flex-direction: column; align-items: flex-start; }
+      .overall-rating { width: 100%; }
+    }
+    .review-card {
+      background: var(--navy2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.75rem;
+      position: relative; overflow: hidden; transition: all 0.25s;
+    }
+    .review-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+    }
+    .review-card.featured {
+      border-color: var(--border2);
+      background: linear-gradient(135deg, var(--navy2) 0%, rgba(0,200,150,0.05) 100%);
+    }
+    .review-card::before {
+      content: '"'; position: absolute; top: 12px; right: 20px;
+      font-family: var(--font-h); font-size: 80px; font-weight: 800;
+      color: rgba(0,200,150,0.07); line-height: 1;
+    }
+    .review-stars { display: flex; gap: 3px; margin-bottom: 1rem; }
+    .review-stars .star { width: 14px; height: 14px; }
+    .review-text {
+      font-size: 15px; color: var(--text); line-height: 1.78;
+      margin-bottom: 1.5rem; font-style: italic;
+    }
+    .review-author {
+      display: flex; align-items: center; gap: 10px;
+      border-top: 1px solid var(--border); padding-top: 1rem;
+    }
+    .author-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h); font-size: 14px; font-weight: 700;
+      flex-shrink: 0; border: 2px solid var(--border2);
+    }
+    .author-name { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 3px; }
+    .author-role { font-size: 13px; color: var(--muted); }
+    .verified-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10.5px; color: var(--teal); background: var(--teal-dim);
+      border: 1px solid var(--border2); border-radius: 10px; padding: 2px 8px;
+      margin-left: auto; flex-shrink: 0;
+    }
+    .verified-badge svg { width: 10px; height: 10px; }
+    .review-tag {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 11px;
+      color: var(--amber); background: rgba(255,179,71,0.10);
+      border: 1px solid rgba(255,179,71,0.20); border-radius: 10px;
+      padding: 3px 10px; margin-bottom: 1rem; font-weight: 500;
+    }
+
+    /* ══ FOOTER ══════════════════════════════════════════════ */
+    .site-footer {
+      background: var(--navy2); border-top: 1px solid var(--border);
+      position: relative; z-index: 1; overflow: hidden;
+    }
+    .site-footer::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--teal2), var(--teal), transparent);
+    }
+    .footer-top {
+      max-width: 1100px; margin: 0 auto; padding: 4rem 2rem 3rem;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+    }
+    .footer-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; margin-bottom: 1rem;
+    }
+    .footer-logo-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--teal2), var(--teal));
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    }
+    .footer-logo-icon svg { width: 20px; height: 20px; color: var(--navy); }
+    .footer-logo-name {
+      font-family: var(--font-h); font-size: 20px; font-weight: 800;
+      color: var(--white); letter-spacing: -0.02em;
+    }
+    .footer-logo-name em { color: var(--teal); font-style: normal; }
+    .footer-tagline {
+      font-size: 14px; color: var(--muted); line-height: 1.75;
+      max-width: 280px; margin-bottom: 1.75rem;
+    }
+    .footer-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .f-badge {
+      display: flex; align-items: center; gap: 5px; font-size: 11.5px;
+      color: var(--muted); background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px;
+    }
+    .f-badge svg { width: 12px; height: 12px; color: var(--teal); }
+    .footer-col-title {
+      font-family: var(--font-h); font-size: 13px; font-weight: 700;
+      color: var(--white); text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 1.25rem;
+    }
+    .footer-links { display: flex; flex-direction: column; gap: 10px; list-style: none; }
+    .footer-links a {
+      font-size: 13.5px; color: var(--muted); text-decoration: none;
+      transition: color 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .footer-links a::before {
+      content: ''; width: 4px; height: 4px; border-radius: 50%;
+      background: var(--border2); flex-shrink: 0; transition: background 0.2s;
+    }
+    .footer-links a:hover { color: var(--teal); }
+    .footer-links a:hover::before { background: var(--teal); }
+    .tech-stack { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 0.25rem; }
+    .tech-pill {
+      font-size: 11.5px; color: var(--teal); background: var(--teal-dim);
+      border: 1px solid var(--border2); border-radius: 20px; padding: 4px 11px; font-weight: 500;
+    }
+    .footer-bottom { border-top: 1px solid var(--border); padding: 1.5rem 2rem; }
+    .footer-bottom-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-copyright { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+    .footer-copyright strong { color: rgba(255,255,255,0.6); }
+    .footer-disclaimer-bar {
+      font-size: 11.5px; color: rgba(255,255,255,0.22);
+      text-align: right; max-width: 420px; line-height: 1.55;
+    }
+    footer { display: none; }
+
+        /* ══ RESPONSIVE ══════════════════════════════════════════ */
+    /* ══ TABLET 900px ═══════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .hero-inner        { grid-template-columns: 1fr; gap: 2.5rem; }
+      .hero-visual       { order: -1; }
+      .types-grid        { grid-template-columns: 1fr; }
+      .symptoms-grid     { grid-template-columns: repeat(2,1fr); }
+      .how-grid          { grid-template-columns: repeat(2,1fr); gap: 2rem; }
+      .how-grid::before  { display: none; }
+      .risk-split        { grid-template-columns: 1fr; gap: 2rem; }
+      .stats-inner       { grid-template-columns: repeat(2,1fr); }
+      .stat-item         { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat-item:nth-child(3),
+      .stat-item:nth-child(4) { border-bottom: none; }
+      .ml-cards          { grid-template-columns: 1fr; }
+      .cta-box           { padding: 2.5rem 1.5rem; }
+      .float-badge       { display: none; }
+      /* reviews 2-col on tablet */
+      .reviews-grid      { grid-template-columns: repeat(2,1fr); }
+      /* footer 2-col on tablet */
+      .footer-top        { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    }
+
+    /* ══ MOBILE 600px ════════════════════════════════════════ */
+    @media (max-width: 600px) {
+      /* --- NAV --- */
+      nav { padding: 0 1rem; height: 56px; }
+      .nav-date  { display: none; }
+      .nav-clock { display: none; }
+      .brand-name { font-size: 16px; }
+      .btn-nav { height: 34px; padding: 0 14px; font-size: 13px; }
+
+      /* --- HERO --- */
+      .hero { padding: 76px 1.25rem 3rem; min-height: auto; }
+      .hero-inner { gap: 2rem; }
+      .hero-tag   { font-size: 11px; padding: 5px 12px; margin-bottom: 1rem; }
+      .hero h1    { font-size: 30px; margin-bottom: 0.9rem; }
+      .hero-desc  { font-size: 15px; margin-bottom: 1.5rem; }
+      .hero-actions { gap: 10px; }
+      .btn-hero   { height: 48px; padding: 0 20px; font-size: 14px; }
+      .hero-trust { font-size: 12px; margin-top: 1.5rem; }
+      .hero-stat-num { font-size: 18px; }
+      .hero-stat-lbl { font-size: 11px; }
+      .hero-stats    { gap: 1.5rem; }
+
+      /* --- MONITOR CARD --- */
+      .monitor-card { border-radius: 14px; padding: 1.25rem; }
+      .monitor-title { font-size: 13px; }
+      .metric-val  { font-size: 20px; }
+      .metric-lbl  { font-size: 9.5px; }
+
+      /* --- STATS BAR --- */
+      .stats-bar   { padding: 2rem 1.25rem; }
+      .stats-inner { grid-template-columns: repeat(2,1fr); gap: 0; }
+      .stat-item   { padding: 1rem 0.5rem; border-right: none; border-bottom: 1px solid var(--border); }
+      .stat-item:nth-child(even) { border-left: 1px solid var(--border); }
+      .stat-item:nth-child(3),
+      .stat-item:nth-child(4)    { border-bottom: none; }
+      .stat-num  { font-size: 28px; }
+      .stat-desc { font-size: 12px; }
+
+      /* --- SECTIONS --- */
+      .section           { padding: 3.5rem 1.25rem; }
+      .symptoms-section  { padding: 3.5rem 1.25rem; }
+      .ml-section        { padding: 3.5rem 1.25rem; }
+      .cta-section       { padding: 3.5rem 1.25rem; }
+      .reviews-section   { padding: 3.5rem 1.25rem; }
+      .section-h    { font-size: 24px; }
+      .section-sub  { font-size: 14px; }
+      .section-tag  { font-size: 11px; }
+
+      /* --- TYPE CARDS --- */
+      .types-grid     { gap: 1rem; }
+      .type-name      { font-size: 16px; }
+      .type-desc      { font-size: 13px; }
+
+      /* --- SYMPTOMS 2-col --- */
+      .symptoms-grid  { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+      .sym-name       { font-size: 13px; }
+      .sym-desc       { font-size: 11.5px; }
+      .sym-icon       { width: 44px; height: 44px; margin-bottom: 0.75rem; }
+
+      /* --- HOW IT WORKS --- */
+      .how-grid      { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+      .step-name     { font-size: 13.5px; }
+      .step-desc     { font-size: 12.5px; }
+      .step-circle   { width: 48px; height: 48px; font-size: 16px; margin-bottom: 1rem; }
+
+      /* --- ML CARDS --- */
+      .ml-cards      { grid-template-columns: 1fr; gap: 1rem; }
+      .ml-card-title { font-size: 15px; }
+      .ml-card-desc  { font-size: 13px; }
+      .ml-stat       { font-size: 20px; }
+
+      /* --- RISK SECTION --- */
+      .risk-split     { gap: 1.5rem; }
+      .risk-item      { font-size: 13px; padding: 10px 13px; }
+      .comp-name      { font-size: 12.5px; }
+
+      /* --- CTA --- */
+      .cta-box       { padding: 2rem 1.25rem; border-radius: 16px; }
+      .cta-h         { font-size: 24px; }
+      .cta-sub       { font-size: 14px; }
+      .cta-actions   { flex-direction: column; align-items: stretch; }
+      .btn-hero      { justify-content: center; }
+
+      /* --- REVIEWS --- */
+      .reviews-header { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
+      .reviews-grid   { grid-template-columns: 1fr; gap: 1rem; }
+      .overall-rating { width: 100%; padding: 1rem 1.25rem; }
+      .rating-num     { font-size: 42px; }
+      .star           { width: 15px; height: 15px; }
+      .review-text    { font-size: 14px; line-height: 1.65; }
+      .review-card    { padding: 1.25rem; }
+      .author-name    { font-size: 13.5px; }
+      .author-role    { font-size: 11.5px; }
+
+      /* --- FOOTER --- */
+      .footer-top     { grid-template-columns: 1fr; gap: 2rem; padding: 2.5rem 1.25rem 2rem; }
+      .footer-tagline { font-size: 13px; max-width: 100%; }
+      .footer-logo-name { font-size: 18px; }
+      .footer-col-title { font-size: 12px; }
+      .footer-links a   { font-size: 13px; }
+      .footer-bottom    { padding: 1.25rem; }
+      .footer-bottom-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .footer-disclaimer-bar { text-align: left; max-width: 100%; }
+      .footer-copyright,
+      .footer-disclaimer-bar { font-size: 12px; }
+    }
+
+    /* ══ SMALL PHONES 400px ══════════════════════════════════ */
+    @media (max-width: 400px) {
+      .hero h1         { font-size: 26px; }
+      .hero-desc       { font-size: 14px; }
+      .symptoms-grid   { grid-template-columns: 1fr; }
+      .how-grid        { grid-template-columns: 1fr; gap: 1.25rem; }
+      .section-h       { font-size: 22px; }
+      .cta-h           { font-size: 22px; }
+      .reviews-grid    { grid-template-columns: 1fr; }
+    }
+
+    /* ══ SCROLL REVEAL ═══════════════════════════════════════ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════ NAV ════════════════════════════════ -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <span class="brand-name">Diabetes<em>Guard</em></span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-date" id="nav-date">{{ date }}</span>
+    <span class="nav-clock" id="nav-clock">--:--:--</span>
+    <a class="btn-nav" href="/predict">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Check My Risk
+    </a>
+  </div>
+</nav>
+
+<!-- ════════════════════ HERO ═══════════════════════════════ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="hero-inner">
+    <!-- Left Content -->
+    <div class="hero-content">
+      <div class="hero-tag">
+        <div class="tag-dot"></div>
+        AI-Powered Medical Screening
+      </div>
+      <h1>
+        Detect Diabetes<br>
+        <span class="accent"><span class="underline-wrap">Before</span> It Detects You</span>
+      </h1>
+      <p class="hero-desc">
+        Our machine learning model analyzes your personal and clinical health data to predict your diabetes risk — instantly, accurately, and privately. Early detection saves lives.
+      </p>
+      <div class="hero-actions">
+        <a href="/predict" class="btn-hero btn-primary-hero">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Start Free Assessment
+        </a>
+        <a href="#how-it-works" class="btn-hero btn-outline-hero">How It Works</a>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-avatars">
+          <div class="trust-av" style="background:#1a3d4f;color:#5ba4cf;">AK</div>
+          <div class="trust-av" style="background:#1d3a2a;color:#00c896;">SR</div>
+          <div class="trust-av" style="background:#3d2a1a;color:#ffb347;">MH</div>
+          <div class="trust-av" style="background:#2a1d3d;color:#a78bfa;">NA</div>
+        </div>
+        <span>Trusted by students &amp; healthcare learners</span>
+      </div>
+    </div>
+
+    <!-- Right Visual -->
+    <div class="hero-visual">
+      <div class="float-badge b1">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        ML Model Active
+      </div>
+      <div class="float-badge b2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Secure &amp; Private
+      </div>
+
+      <div class="monitor-card">
+        <div class="monitor-header">
+          <span class="monitor-title">Patient Risk Dashboard</span>
+          <span class="live-badge"><span class="live-dot"></span>Live</span>
+        </div>
+
+        <!-- ECG Animation -->
+        <div class="ecg-wrap">
+          <div class="ecg-label">ECG / Cardiac Rhythm</div>
+          <svg class="ecg-svg" height="54" viewBox="0 0 320 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path id="ecg-path" d="M0 30 L30 30 L38 30 L44 10 L50 50 L56 8 L62 44 L68 30 L90 30 L120 30 L128 30 L134 10 L140 50 L146 8 L152 44 L158 30 L180 30 L210 30 L218 30 L224 10 L230 50 L236 8 L242 44 L248 30 L270 30 L320 30"
+              stroke="#00C896" stroke-width="1.5" fill="none"
+              stroke-dasharray="600" stroke-dashoffset="600">
+              <animate attributeName="stroke-dashoffset" from="600" to="0" dur="2.5s" begin="0.5s" fill="freeze" repeatCount="indefinite"/>
+            </path>
+          </svg>
+        </div>
+
+        <!-- Metrics -->
+        <div class="metrics-row">
+          <div class="metric-box ok">
+            <div class="metric-val">98</div>
+            <div class="metric-lbl">Glucose mg/dL</div>
+          </div>
+          <div class="metric-box warn">
+            <div class="metric-val">27.4</div>
+            <div class="metric-lbl">BMI</div>
+          </div>
+          <div class="metric-box bad">
+            <div class="metric-val">142</div>
+            <div class="metric-lbl">Insulin μU/mL</div>
+          </div>
+        </div>
+
+        <!-- Risk Gauge -->
+        <div class="gauge-wrap">
+          <div class="gauge-header">
+            <span>Diabetes Risk Score</span>
+            <span class="gauge-score">62% — Moderate</span>
+          </div>
+          <div class="gauge-bar">
+            <div class="gauge-fill"></div>
+          </div>
+          <div class="gauge-labels">
+            <span>Low</span>
+            <span>Moderate</span>
+            <span>High</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ STATS BAR ══════════════════════════ -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-num">537M+</div>
+      <div class="stat-desc">Adults living with diabetes worldwide in 2021</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num">~50%</div>
+      <div class="stat-desc">People unaware they have type 2 diabetes</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num">80%</div>
+      <div class="stat-desc">Type 2 cases preventable with early action</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num">6.7M</div>
+      <div class="stat-desc">Deaths caused by diabetes each year globally</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ DIABETES TYPES ═════════════════════ -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-tag">Medical Background</div>
+    <h2 class="section-h reveal">Understanding Diabetes</h2>
+    <p class="section-sub reveal">Diabetes is a chronic metabolic disease characterized by elevated blood glucose levels. There are three primary types, each with distinct causes and risk profiles.</p>
+
+    <div class="types-grid">
+      <div class="type-card t1 reveal">
+        <div class="type-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 0v10l7 3"/>
+          </svg>
+        </div>
+        <div class="type-name">Type 1 Diabetes</div>
+        <div class="type-sub">Autoimmune — Insulin Dependent</div>
+        <div class="type-desc">The immune system attacks insulin-producing beta cells in the pancreas. Patients require lifelong insulin therapy. Onset typically in childhood or early adulthood.</div>
+        <div class="type-facts">
+          <div class="type-fact"><div class="fact-dot"></div>Affects ~8% of all diabetics</div>
+          <div class="type-fact"><div class="fact-dot"></div>Genetic and environmental triggers</div>
+          <div class="type-fact"><div class="fact-dot"></div>Not preventable currently</div>
+        </div>
+      </div>
+
+      <div class="type-card t2 reveal" style="transition-delay:0.1s">
+        <div class="type-icon teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+          </svg>
+        </div>
+        <div class="type-name">Type 2 Diabetes</div>
+        <div class="type-sub">Metabolic — Insulin Resistant</div>
+        <div class="type-desc">The body fails to use insulin effectively (insulin resistance). Most common form, strongly linked to lifestyle, obesity, and age. Often silent for years before diagnosis.</div>
+        <div class="type-facts">
+          <div class="type-fact"><div class="fact-dot"></div>~90% of all diabetes cases</div>
+          <div class="type-fact"><div class="fact-dot"></div>Preventable and manageable</div>
+          <div class="type-fact"><div class="fact-dot"></div>This tool screens for Type 2</div>
+        </div>
+      </div>
+
+      <div class="type-card tg reveal" style="transition-delay:0.2s">
+        <div class="type-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="type-name">Gestational Diabetes</div>
+        <div class="type-sub">Pregnancy-Related — Temporary</div>
+        <div class="type-desc">Develops during pregnancy when hormonal changes cause insulin resistance. Usually resolves after birth, but significantly increases future risk of Type 2 diabetes.</div>
+        <div class="type-facts">
+          <div class="type-fact"><div class="fact-dot"></div>Affects 2–10% of pregnancies</div>
+          <div class="type-fact"><div class="fact-dot"></div>Managed with diet and exercise</div>
+          <div class="type-fact"><div class="fact-dot"></div>7× higher future T2D risk</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ SYMPTOMS ═══════════════════════════ -->
+<section class="symptoms-section">
+  <div class="section-inner">
+    <div class="section-tag">Clinical Signs</div>
+    <h2 class="section-h reveal">Warning Signs to Watch</h2>
+    <p class="section-sub reveal">These classic symptoms of diabetes can appear gradually. Many people ignore them for months or years before seeking help.</p>
+
+    <div class="symptoms-grid">
+      <div class="symptom-card reveal">
+        <div class="sym-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10"/><path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <div class="sym-name">Frequent Urination</div>
+        <div class="sym-desc">Kidneys work overtime to filter excess sugar, causing you to urinate more frequently, especially at night.</div>
+      </div>
+      <div class="symptom-card reveal" style="transition-delay:0.08s">
+        <div class="sym-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.5 9.5a8 8 0 0 1 15 0"/><path d="M4.5 14.5a8 8 0 0 0 15 0"/><line x1="12" y1="2" x2="12" y2="22"/>
+          </svg>
+        </div>
+        <div class="sym-name">Excessive Thirst</div>
+        <div class="sym-desc">Persistent thirst even after drinking water is a hallmark sign as blood sugar draws fluid from tissues.</div>
+      </div>
+      <div class="symptom-card reveal" style="transition-delay:0.12s">
+        <div class="sym-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div class="sym-name">Unexplained Weight Loss</div>
+        <div class="sym-desc">Without insulin to move glucose into cells, the body burns fat and muscle as alternative energy sources.</div>
+      </div>
+      <div class="symptom-card reveal" style="transition-delay:0.16s">
+        <div class="sym-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        </div>
+        <div class="sym-name">Blurred Vision</div>
+        <div class="sym-desc">High blood sugar causes the lens of the eye to swell, changing its shape and reducing visual clarity.</div>
+      </div>
+      <div class="symptom-card reveal" style="transition-delay:0.20s">
+        <div class="sym-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <div class="sym-name">Extreme Fatigue</div>
+        <div class="sym-desc">Cells starved of glucose cannot produce adequate energy, causing persistent tiredness unrelieved by rest.</div>
+      </div>
+      <div class="symptom-card reveal" style="transition-delay:0.24s">
+        <div class="sym-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/>
+          </svg>
+        </div>
+        <div class="sym-name">Slow-Healing Wounds</div>
+        <div class="sym-desc">Elevated blood glucose impairs circulation and immune response, causing cuts and sores to heal very slowly.</div>
+      </div>
+      <div class="symptom-card reveal" style="transition-delay:0.28s">
+        <div class="sym-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/><path d="M4.93 4.93l14.14 14.14"/>
+          </svg>
+        </div>
+        <div class="sym-name">Numbness / Tingling</div>
+        <div class="sym-desc">Diabetic neuropathy begins with tingling in hands and feet as nerves become damaged by prolonged high blood sugar.</div>
+      </div>
+      <div class="symptom-card reveal" style="transition-delay:0.32s">
+        <div class="sym-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3l18 18M10.5 10.677a2 2 0 0 0 2.823 2.823"/><path d="M7.362 7.36A7.03 7.03 0 0 0 5 12c0 3.866 3.582 7 8 7a7.029 7.029 0 0 0 4.963-2.05"/>
+          </svg>
+        </div>
+        <div class="sym-name">Recurring Infections</div>
+        <div class="sym-desc">High glucose feeds bacteria and fungi, making diabetics more prone to skin, urinary tract, and yeast infections.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ RISK FACTORS ═══════════════════════ -->
+<section class="section">
+  <div class="section-inner">
+    <div class="risk-split">
+      <div class="risk-text">
+        <div class="section-tag reveal">Risk Factors</div>
+        <h2 class="section-h reveal">Who Is Most at Risk?</h2>
+        <p class="section-sub reveal">Diabetes risk is shaped by a combination of genetic, lifestyle, and clinical factors. Understanding these helps you take preventive action early.</p>
+        <div class="risk-list">
+          <div class="risk-item reveal"><div class="risk-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>Age over 35 years</div>
+          <div class="risk-item reveal" style="transition-delay:.05s"><div class="risk-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>Family history of diabetes</div>
+          <div class="risk-item reveal" style="transition-delay:.10s"><div class="risk-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>BMI of 25 or higher (overweight)</div>
+          <div class="risk-item reveal" style="transition-delay:.15s"><div class="risk-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>Sedentary lifestyle / low activity</div>
+          <div class="risk-item reveal" style="transition-delay:.20s"><div class="risk-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>High blood pressure or cholesterol</div>
+          <div class="risk-item reveal" style="transition-delay:.25s"><div class="risk-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div>Pre-diabetes or gestational diabetes</div>
+        </div>
+      </div>
+
+      <!-- Complications Panel -->
+      <div class="complications-panel reveal">
+        <div class="comp-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
+          Long-Term Complications if Untreated
+        </div>
+        <div class="comp-list">
+          <div class="comp-item">
+            <span class="comp-name">Heart Disease &amp; Stroke</span>
+            <div class="comp-bar-wrap"><div class="comp-bar" style="width:85%"></div></div>
+          </div>
+          <div class="comp-item">
+            <span class="comp-name">Kidney Failure (Nephropathy)</span>
+            <div class="comp-bar-wrap"><div class="comp-bar" style="width:72%"></div></div>
+          </div>
+          <div class="comp-item">
+            <span class="comp-name">Vision Loss (Retinopathy)</span>
+            <div class="comp-bar-wrap"><div class="comp-bar" style="width:65%"></div></div>
+          </div>
+          <div class="comp-item">
+            <span class="comp-name">Nerve Damage (Neuropathy)</span>
+            <div class="comp-bar-wrap"><div class="comp-bar" style="width:60%"></div></div>
+          </div>
+          <div class="comp-item">
+            <span class="comp-name">Foot Amputation</span>
+            <div class="comp-bar-wrap"><div class="comp-bar" style="width:40%"></div></div>
+          </div>
+          <div class="comp-item">
+            <span class="comp-name">Diabetic Coma</span>
+            <div class="comp-bar-wrap"><div class="comp-bar" style="width:30%"></div></div>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:1.25rem;line-height:1.6;">
+          Bars represent relative risk increase compared to the general population in unmanaged long-term diabetes.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ HOW IT WORKS ═══════════════════════ -->
+<section class="ml-section" id="how-it-works">
+  <div class="section-inner">
+    <div class="section-tag reveal">Our Technology</div>
+    <h2 class="section-h reveal">How It Works</h2>
+    <p class="section-sub reveal">A four-step pipeline from data entry to machine learning prediction — designed to be fast, accurate, and easy to use.</p>
+
+    <div class="how-grid">
+      <div class="how-step reveal">
+        <div class="step-circle">01</div>
+        <div class="step-name">Enter Your Data</div>
+        <div class="step-desc">Fill in your personal, lifestyle, medical history, and clinical measurements through our guided 3-step form.</div>
+      </div>
+      <div class="how-step reveal" style="transition-delay:.1s">
+        <div class="step-circle">02</div>
+        <div class="step-name">Data Processing</div>
+        <div class="step-desc">Our Flask backend receives your data, applies standard scaling and preprocessing — just like a trained lab pipeline.</div>
+      </div>
+      <div class="how-step reveal" style="transition-delay:.2s">
+        <div class="step-circle">03</div>
+        <div class="step-name">ML Prediction</div>
+        <div class="step-desc">A Random Forest model trained on the PIMA Diabetes Dataset analyzes your 8+ features and returns a risk probability.</div>
+      </div>
+      <div class="how-step reveal" style="transition-delay:.3s">
+        <div class="step-circle">04</div>
+        <div class="step-name">Your Results</div>
+        <div class="step-desc">Receive a detailed risk score, key factor analysis, and personalized recommendations — all in under 3 seconds.</div>
+      </div>
+    </div>
+
+    <!-- ML Cards -->
+    <div class="ml-cards" style="margin-top:4rem">
+      <div class="ml-card reveal">
+        <div class="ml-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div class="ml-card-title">Random Forest Classifier</div>
+        <div class="ml-card-desc">An ensemble of decision trees trained on the PIMA Indians Diabetes Dataset with 768 samples and 8 clinical features. Handles class imbalance via balanced weights.</div>
+        <span class="ml-stat">~77%</span>
+        <span class="ml-stat-lbl">Accuracy on test split</span>
+      </div>
+      <div class="ml-card reveal" style="transition-delay:.1s">
+        <div class="ml-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        <div class="ml-card-title">8 Clinical Features</div>
+        <div class="ml-card-desc">Glucose, Blood Pressure, Insulin, BMI, Age, Pregnancies, Skin Thickness, and Diabetes Pedigree Function — all validated features from clinical research.</div>
+        <span class="ml-stat">10-Fold</span>
+        <span class="ml-stat-lbl">Cross-validation used</span>
+      </div>
+      <div class="ml-card reveal" style="transition-delay:.2s">
+        <div class="ml-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="ml-card-title">Preprocessing Pipeline</div>
+        <div class="ml-card-desc">Zero-value imputation using column medians, followed by StandardScaler normalization — ensuring the model receives clean, properly scaled input every time.</div>
+        <span class="ml-stat">Sklearn</span>
+        <span class="ml-stat-lbl">Pipeline + Pickle serialization</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ CTA ═════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-box">
+      <div class="hero-tag" style="justify-content:center;margin-bottom:1.5rem;">
+        <div class="tag-dot"></div>
+        Free · Private · Instant
+      </div>
+      <h2 class="cta-h">Know Your Risk <em>Today</em></h2>
+      <p class="cta-sub">It takes less than 3 minutes. Enter your health details and our AI model gives you a personalized diabetes risk assessment — right now, for free.</p>
+      <div class="cta-actions">
+        <a href="/predict" class="btn-hero btn-primary-hero">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Start My Assessment
+        </a>
+        <a href="#how-it-works" class="btn-hero btn-outline-hero">Learn More</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ REVIEWS ════════════════════════════ -->
+<section class="reviews-section">
+  <div class="reviews-header">
+    <div>
+      <div class="section-tag">User Reviews</div>
+      <h2 class="section-h reveal">What People Are Saying</h2>
+      <p class="section-sub reveal">Real feedback from students, healthcare learners, and patients who used DiabetesGuard.</p>
+    </div>
+    <div class="overall-rating reveal">
+      <div class="rating-num">4.8</div>
+      <div class="rating-details">
+        <div class="stars-row">
+          <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div class="rating-count">Based on 200+ assessments</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reviews-grid">
+
+    <!-- Review 1 -->
+    <div class="review-card featured reveal">
+      <div class="review-tag">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Top Review
+      </div>
+      <div class="review-stars">
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"I had no idea my glucose and BMI combination was putting me at moderate risk. This tool explained everything so clearly — the factor breakdown was eye-opening. I went to my doctor the next week and she confirmed pre-diabetes. Early detection saved me."</p>
+      <div class="review-author">
+        <div class="author-avatar" style="background:rgba(0,200,150,0.15);color:var(--teal);">AK</div>
+        <div>
+          <div class="author-name">Ayesha Khan</div>
+          <div class="author-role">Patient, Lahore</div>
+        </div>
+        <div class="verified-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verified
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 2 -->
+    <div class="review-card reveal" style="transition-delay:.1s">
+      <div class="review-stars">
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"As a medical student, I was impressed by how accurately the model reflects real clinical parameters — glucose, insulin, BMI, pedigree function. The explanations for each factor are medically sound. A fantastic FYP and a genuinely useful tool."</p>
+      <div class="review-author">
+        <div class="author-avatar" style="background:rgba(91,164,207,0.15);color:#5BA4CF;">SR</div>
+        <div>
+          <div class="author-name">Dr. Sana Rehman</div>
+          <div class="author-role">Medical Student, KEMU</div>
+        </div>
+        <div class="verified-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verified
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 3 -->
+    <div class="review-card reveal" style="transition-delay:.2s">
+      <div class="review-stars">
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor" style="opacity:.35"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"My father has diabetes so I was worried about my own risk. The form was very simple — even my mother who does not speak much English could understand every question. The recommendations were practical and specific. Very helpful tool."</p>
+      <div class="review-author">
+        <div class="author-avatar" style="background:rgba(255,179,71,0.15);color:#FFB347;">MH</div>
+        <div>
+          <div class="author-name">Muhammad Hassan</div>
+          <div class="author-role">Software Engineer, Karachi</div>
+        </div>
+        <div class="verified-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verified
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 4 -->
+    <div class="review-card reveal" style="transition-delay:.1s">
+      <div class="review-stars">
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"I used this for my health awareness class and the entire class was engaged. The live BMI calculator, color-coded sliders, and the detailed result report made it much more interactive than a regular form. The design is stunning — professional quality."</p>
+      <div class="review-author">
+        <div class="author-avatar" style="background:rgba(167,139,250,0.15);color:#a78bfa;">NF</div>
+        <div>
+          <div class="author-name">Nadia Farooq</div>
+          <div class="author-role">Health Sciences Lecturer</div>
+        </div>
+        <div class="verified-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verified
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 5 -->
+    <div class="review-card reveal" style="transition-delay:.2s">
+      <div class="review-stars">
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"The 3-step form is brilliantly designed. I didn't feel overwhelmed at any point. After submitting, the risk percentage bar animation and the recommendations list made everything crystal clear. I shared it with my whole family. Everyone should try this."</p>
+      <div class="review-author">
+        <div class="author-avatar" style="background:rgba(52,211,153,0.15);color:#34d399;">ZM</div>
+        <div>
+          <div class="author-name">Zara Malik</div>
+          <div class="author-role">University Student, Islamabad</div>
+        </div>
+        <div class="verified-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verified
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 6 -->
+    <div class="review-card reveal" style="transition-delay:.3s">
+      <div class="review-stars">
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor" style="opacity:.4"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <p class="review-text">"Clean, fast, and accurate. As a CS final year student myself, I admire the technical stack — Flask backend, Random Forest model, real preprocessing pipeline. The feature importance explanation shows real ML knowledge. Excellent final year project."</p>
+      <div class="review-author">
+        <div class="author-avatar" style="background:rgba(255,107,107,0.15);color:#ff6b6b;">TA</div>
+        <div>
+          <div class="author-name">Tariq Ahmed</div>
+          <div class="author-role">CS Student, FAST NUCES</div>
+        </div>
+        <div class="verified-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verified
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════ FOOTER ══════════════════════════════ -->
+<div class="site-footer">
+  <div class="footer-top">
+
+    <!-- Brand Column -->
+    <div>
+      <a class="footer-logo" href="#">
+        <div class="footer-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <span class="footer-logo-name">Diabetes<em>Guard</em></span>
+      </a>
+      <p class="footer-tagline">An AI-powered early diabetes risk prediction tool designed to make health screening accessible, fast, and educational for everyone.</p>
+      <div class="footer-badges">
+        <div class="f-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Private &amp; Secure
+        </div>
+        <div class="f-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Results in &lt;3s
+        </div>
+        <div class="f-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          100% Free
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div>
+      <div class="footer-col-title">Navigation</div>
+      <ul class="footer-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/predict">Risk Assessment</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#symptoms">Symptoms</a></li>
+        <li><a href="#diabetes-types">About Diabetes</a></li>
+      </ul>
+    </div>
+
+    <!-- Medical Info -->
+    <div>
+      <div class="footer-col-title">Medical Info</div>
+      <ul class="footer-links">
+        <li><a href="#diabetes-types">Type 1 Diabetes</a></li>
+        <li><a href="#diabetes-types">Type 2 Diabetes</a></li>
+        <li><a href="#diabetes-types">Gestational Diabetes</a></li>
+        <li><a href="#symptoms">Warning Symptoms</a></li>
+        <li><a href="#risk-factors">Risk Factors</a></li>
+      </ul>
+    </div>
+
+    <!-- Tech Stack -->
+    <div>
+      <div class="footer-col-title">Built With</div>
+      <div class="tech-stack">
+        <span class="tech-pill">Flask</span>
+        <span class="tech-pill">Python</span>
+        <span class="tech-pill">Scikit-learn</span>
+        <span class="tech-pill">Pandas</span>
+        <span class="tech-pill">NumPy</span>
+        <span class="tech-pill">Matplotlib</span>
+        <span class="tech-pill">Seaborn</span>
+        <span class="tech-pill">Pickle</span>
+        <span class="tech-pill">HTML5</span>
+        <span class="tech-pill">CSS3</span>
+        <span class="tech-pill">JavaScript</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">
+      <div class="footer-copyright">
+        <strong>DiabetesGuard</strong> &copy; 2025 &nbsp;&middot;&nbsp;
+        Final Year Project &nbsp;&middot;&nbsp;
+        Machine Learning &amp; Web Development<br>
+        Designed &amp; built with Flask, Scikit-learn, and modern web technologies.
+      </div>
+      <div class="footer-disclaimer-bar">
+        This tool is for educational purposes only and does not constitute medical advice.
+        Always consult a qualified healthcare professional for diagnosis and treatment.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Live clock */
+  function tick() {
+    const now = new Date();
+    const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hr = (h % 12 || 12).toString().padStart(2,'0');
+    const el = document.getElementById('nav-clock');
+    if (el) el.textContent = `${hr}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ampm}`;
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* Scroll reveal */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
